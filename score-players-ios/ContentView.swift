@@ -128,6 +128,14 @@ extension PlayerInfo {
         return points
     }
     
+    var goalsCount: Int {
+        var goalsCount = 0
+        goals.forEach {
+            goalsCount += $0.value
+        }
+        return goalsCount
+    }
+    
     static var dummyData: [PlayerInfo] {
         let goals = GoalType.allCases.map {
             let goals = $0 == .forwardOrPenalty ? 2 : 0
@@ -144,7 +152,7 @@ struct ContentView: View {
     @State var players: [PlayerInfo]
     @State private var csvInfo: String = ""
     @State private var isSettingsPresented = false
-    @AppStorage("promptPrefix") var promptPrefix: String = SettingsView.prompt
+    @AppStorage("promptPrefix") var promptPrefix: String = ""
     
     var body: some View {
         NavigationView {
@@ -161,7 +169,6 @@ struct ContentView: View {
                             })
                         }
                         .listStyle(.inset)
-                        Text(csvInfo)
                         ShareLink(item: csvInfo) {
                             Label("Generate prompt", systemImage: "bolt.fill")
                         }
@@ -189,11 +196,12 @@ struct ContentView: View {
             }
             .onChange(of: players) { oldValue, newValue in
                 let players = players.filter { !$0.name.isEmpty }
-                csvInfo = "\(promptPrefix)\n\("Nombre del jugador;Valoración;Puntos por goles;Asistencias;Penaltis parados por el portero;Penaltis fallados;Portero no encaja goles;Expulsión por doble amarilla;Expulsión por roja directa")\n"
+                csvInfo = "\(promptPrefix)\n\("Nombre del jugador;Valoración;Goles;Puntos por goles marcados;Asistencias;Penaltis parados por el portero;Penaltis fallados;Portero no encaja goles;Expulsión por doble amarilla;Expulsión por roja directa")\n"
                 players.forEach { player in
                     let csvLine: String = [
                         player.name,
                         "\(player.score.rawValue)",
+                        "\(player.goalsCount)",
                         "\(player.goalPoints)",
                         "\(player.assists)",
                         "\(player.penaltySavesGoalkeeper)",
